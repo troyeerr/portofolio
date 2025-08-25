@@ -34,25 +34,31 @@ try {
 }
 
 function fixAssetPaths() {
+  // Get repository name from package.json or environment
+  const repoName = process.env.REPO_NAME || 'portofolio';
+  const basePath = repoName ? `/${repoName}` : '';
+  
+  console.log(`🔧 Fixing asset paths for GitHub Pages (base path: ${basePath || 'root'})`);
+  
   const indexPath = path.join('out', 'index.html');
   if (fs.existsSync(indexPath)) {
     let content = fs.readFileSync(indexPath, 'utf8');
     
-    // Fix CSS paths
-    content = content.replace(/href="\/_next\//g, 'href="./_next/');
-    
-    // Fix JS paths
-    content = content.replace(/src="\/_next\//g, 'src="./_next/');
-    
-    // Fix image paths
-    content = content.replace(/src="\/images\//g, 'src="./images/');
-    
-    // Fix font paths
-    content = content.replace(/href="\/_next\/static\/media\//g, 'href="./_next/static/media/');
-    
-    // Fix any remaining absolute paths
-    content = content.replace(/href="\//g, 'href="./');
-    content = content.replace(/src="\//g, 'src="./');
+    if (basePath) {
+      // For GitHub Pages with subdirectory
+      content = content.replace(/href="\.\/_next\//g, `href="${basePath}/_next/`);
+      content = content.replace(/src="\.\/_next\//g, `src="${basePath}/_next/`);
+      content = content.replace(/src="\.\/images\//g, `src="${basePath}/images/`);
+      content = content.replace(/href="\.\/_next\/static\/media\//g, `href="${basePath}/_next/static/media/`);
+    } else {
+      // For root domain deployment
+      content = content.replace(/href="\/_next\//g, 'href="./_next/');
+      content = content.replace(/src="\/_next\//g, 'src="./_next/');
+      content = content.replace(/src="\/images\//g, 'src="./images/');
+      content = content.replace(/href="\/_next\/static\/media\//g, 'href="./_next/static/media/');
+      content = content.replace(/href="\//g, 'href="./');
+      content = content.replace(/src="\//g, 'src="./');
+    }
     
     fs.writeFileSync(indexPath, content);
     console.log('✅ Fixed asset paths in index.html');
@@ -65,13 +71,21 @@ function fixAssetPaths() {
       const filePath = path.join('out', file);
       let content = fs.readFileSync(filePath, 'utf8');
       
-      // Fix all absolute paths
-      content = content.replace(/href="\/_next\//g, 'href="./_next/');
-      content = content.replace(/src="\/_next\//g, 'src="./_next/');
-      content = content.replace(/src="\/images\//g, 'src="./images/');
-      content = content.replace(/href="\/_next\/static\/media\//g, 'href="./_next/static/media/');
-      content = content.replace(/href="\//g, 'href="./');
-      content = content.replace(/src="\//g, 'src="./');
+      if (basePath) {
+        // For GitHub Pages with subdirectory
+        content = content.replace(/href="\.\/_next\//g, `href="${basePath}/_next/`);
+        content = content.replace(/src="\.\/_next\//g, `src="${basePath}/_next/`);
+        content = content.replace(/src="\.\/images\//g, `src="${basePath}/images/`);
+        content = content.replace(/href="\.\/_next\/static\/media\//g, `href="${basePath}/_next/static/media/`);
+      } else {
+        // For root domain deployment
+        content = content.replace(/href="\/_next\//g, 'href="./_next/');
+        content = content.replace(/src="\/_next\//g, 'src="./_next/');
+        content = content.replace(/src="\/images\//g, 'src="./images/');
+        content = content.replace(/href="\/_next\/static\/media\//g, 'href="./_next/static/media/');
+        content = content.replace(/href="\//g, 'href="./');
+        content = content.replace(/src="\//g, 'src="./');
+      }
       
       fs.writeFileSync(filePath, content);
     }

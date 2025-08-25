@@ -13,6 +13,7 @@
     "static": "node scripts/build-static.js",
     "serve": "node scripts/serve-static.js",
     "test-build": "node scripts/test-build.js",
+    "test-github": "node scripts/test-github-pages.js",
     "predeploy": "npm run build && npm run export",
     "deploy": "gh-pages -d out"
   },
