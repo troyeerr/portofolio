@@ -40,35 +40,8 @@ function fixAssetPaths() {
   
   console.log(`🔧 Fixing asset paths for GitHub Pages (base path: ${basePath || 'root'})`);
   
-  const indexPath = path.join('out', 'index.html');
-  if (fs.existsSync(indexPath)) {
-    let content = fs.readFileSync(indexPath, 'utf8');
-    
-    if (basePath) {
-      // For GitHub Pages with subdirectory
-      content = content.replace(/href="\.\/_next\//g, `href="${basePath}/_next/`);
-      content = content.replace(/src="\.\/_next\//g, `src="${basePath}/_next/`);
-      content = content.replace(/src="\.\/images\//g, `src="${basePath}/images/`);
-      content = content.replace(/href="\.\/_next\/static\/media\//g, `href="${basePath}/_next/static/media/`);
-    } else {
-      // For root domain deployment
-      content = content.replace(/href="\/_next\//g, 'href="./_next/');
-      content = content.replace(/src="\/_next\//g, 'src="./_next/');
-      content = content.replace(/src="\/images\//g, 'src="./images/');
-      content = content.replace(/href="\/_next\/static\/media\//g, 'href="./_next/static/media/');
-      content = content.replace(/href="\//g, 'href="./');
-      content = content.replace(/src="\//g, 'src="./');
-    }
-    
-    fs.writeFileSync(indexPath, content);
-    console.log('✅ Fixed asset paths in index.html');
-  }
-  
-  // Also fix any other HTML files
-  const files = fs.readdirSync('out');
-  files.forEach(file => {
-    if (file.endsWith('.html') && file !== 'index.html') {
-      const filePath = path.join('out', file);
+  const processHtmlFile = (filePath) => {
+    if (fs.existsSync(filePath)) {
       let content = fs.readFileSync(filePath, 'utf8');
       
       if (basePath) {
@@ -77,8 +50,16 @@ function fixAssetPaths() {
         content = content.replace(/src="\.\/_next\//g, `src="${basePath}/_next/`);
         content = content.replace(/src="\.\/images\//g, `src="${basePath}/images/`);
         content = content.replace(/href="\.\/_next\/static\/media\//g, `href="${basePath}/_next/static/media/`);
+        // Fix absolute paths that start with /
+        content = content.replace(/href="\/_next\//g, `href="${basePath}/_next/`);
+        content = content.replace(/src="\/_next\//g, `src="${basePath}/_next/`);
+        content = content.replace(/src="\/images\//g, `src="${basePath}/images/`);
+        content = content.replace(/href="\/_next\/static\/media\//g, `href="${basePath}/_next/static/media/`);
+        // Catch any remaining absolute paths that might have been missed
+        content = content.replace(/href="\//g, `href="${basePath}/`);
+        content = content.replace(/src="\//g, `src="${basePath}/`);
       } else {
-        // For root domain deployment
+        // For root domain deployment (ensure relative paths)
         content = content.replace(/href="\/_next\//g, 'href="./_next/');
         content = content.replace(/src="\/_next\//g, 'src="./_next/');
         content = content.replace(/src="\/images\//g, 'src="./images/');
@@ -88,6 +69,16 @@ function fixAssetPaths() {
       }
       
       fs.writeFileSync(filePath, content);
+      console.log(`✅ Fixed asset paths in ${path.basename(filePath)}`);
+    }
+  };
+
+  processHtmlFile(path.join('out', 'index.html'));
+  
+  const files = fs.readdirSync('out');
+  files.forEach(file => {
+    if (file.endsWith('.html') && file !== 'index.html') {
+      processHtmlFile(path.join('out', file));
     }
   });
 }
