@@ -46,18 +46,21 @@ function fixAssetPaths() {
       
       if (basePath) {
         // For GitHub Pages with subdirectory
+        // Fix all asset paths to include the basePath prefix
         content = content.replace(/href="\.\/_next\//g, `href="${basePath}/_next/`);
         content = content.replace(/src="\.\/_next\//g, `src="${basePath}/_next/`);
         content = content.replace(/src="\.\/images\//g, `src="${basePath}/images/`);
         content = content.replace(/href="\.\/_next\/static\/media\//g, `href="${basePath}/_next/static/media/`);
+        
         // Fix absolute paths that start with /
         content = content.replace(/href="\/_next\//g, `href="${basePath}/_next/`);
         content = content.replace(/src="\/_next\//g, `src="${basePath}/_next/`);
         content = content.replace(/src="\/images\//g, `src="${basePath}/images/`);
         content = content.replace(/href="\/_next\/static\/media\//g, `href="${basePath}/_next/static/media/`);
-        // Catch any remaining absolute paths that might have been missed
-        content = content.replace(/href="\//g, `href="${basePath}/`);
-        content = content.replace(/src="\//g, `src="${basePath}/`);
+        
+        // Fix any remaining absolute paths
+        content = content.replace(/href="\/(?!portofolio)/g, `href="${basePath}/`);
+        content = content.replace(/src="\/(?!portofolio)/g, `src="${basePath}/`);
       } else {
         // For root domain deployment (ensure relative paths)
         content = content.replace(/href="\/_next\//g, 'href="./_next/');
